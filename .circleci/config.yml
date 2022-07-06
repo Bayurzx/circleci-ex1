@@ -20,10 +20,10 @@ commands:
       - run:
           name: Destroy environment
           # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable
-          # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID
+          # ${CIRCLE_WORKFLOW_ID:0:7} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
+            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7}
 
 # Define the jobs we want to run for this project
 jobs:
@@ -45,12 +45,12 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file template.yml \
-              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7} \
               --region us-east-1
       # Fail the job intentionally to simulate an error.
       # Uncomment the line below if you want to fail the current step
       # - run: return 1
-      - destroy_environment
+      # - destroy_environment
 
   configure_infrastructure:
     docker:
@@ -74,26 +74,19 @@ jobs:
     docker:
       - image: alpine:latest
     steps:
-      - run: apk add --update curl
       - run:
           name: smoke test
+          # Fail the job intentionally to simulate an error.
           command: |
-            URL="https://blog.udacity.com/"
-            # Test if website exists
-            if curl -s --head ${URL} 
-            then
-              return 0
-            else
-              return 1
-            fi
+            return 1
+      - destroy_environment
 
 # Sequential workflow
 workflows:
   # Name the workflow
   myWorkflow:
     jobs:
-      - build_container
+      # - build_container
       - create_infrastructure
-      - configure_infrastructure
-      # - smoke_test
-
+      # - configure_infrastructure
+      - smoke_test
